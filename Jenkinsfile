@@ -9,7 +9,7 @@ pipeline {
         }
       stage('docker tag') {
             steps {
-                sh 'docker tag javaspring:v1 prasadchandu/java:java-v1'
+                sh 'docker tag javaspring:v1 prasadchandu/mini2-java:java-v1'
             }
         }
       stage('docker login') {
@@ -19,7 +19,7 @@ pipeline {
         }
       stage('docker push') {
             steps {
-                sh 'docker push prasadchandu/java:java-v1'
+                sh 'docker push prasadchandu/mini2-java:java-v1'
             }
       }
         
