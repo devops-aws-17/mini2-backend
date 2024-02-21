@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportImplementation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">02-MINI-PROJECT</a> &gt; <a href="index.source.html" class="el_package">com.mohanit.service</a> &gt; <span class="el_source">ReportImplementation.java</span></div><h1>ReportImplementation.java</h1><pre class="source lang-java linenums">package com.mohanit.service;
+
+import java.awt.Color;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.stereotype.Service;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.CMYKColor;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import com.mohanit.binding.SearchRequest;
+import com.mohanit.binding.SearchResponse;
+import com.mohanit.entity.ReportEntity;
+import com.mohanit.repo.ReportRepo;
+
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Service
+<span class="fc" id="L35">public class ReportImplementation implements ReportService {</span>
+
+	@Autowired
+	private ReportRepo repository;
+
+	@Override
+	public List&lt;String&gt; getPlanName() {
+
+<span class="fc" id="L43">		List&lt;String&gt; findByPlanName = repository.findByPlanName();</span>
+
+<span class="fc" id="L45">		return findByPlanName;</span>
+	}
+
+	@Override
+	public List&lt;String&gt; getPlanStatus() {
+
+<span class="fc" id="L51">		List&lt;String&gt; findByPlanStatus = repository.findByPlanStatus();</span>
+<span class="fc" id="L52">		return findByPlanStatus;</span>
+	}
+
+	@Override
+	public List&lt;SearchResponse&gt; SearchResponse(SearchRequest request) {
+
+<span class="fc" id="L58">		ReportEntity queryBuilder = new ReportEntity();</span>
+
+<span class="fc" id="L60">		String planName = request.getPlanName();</span>
+
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">		if (planName != null &amp;&amp; !planName.equals(&quot;&quot;)) {</span>
+<span class="fc" id="L63">			queryBuilder.setPlanName(planName);</span>
+		}
+
+<span class="fc" id="L66">		String planStatus = request.getPlanStatus();</span>
+
+<span class="pc bpc" id="L68" title="2 of 4 branches missed.">		if (planStatus != null &amp;&amp; !planStatus.equals(&quot;&quot;)) {</span>
+<span class="fc" id="L69">			queryBuilder.setPlanStatus(planStatus);</span>
+		}
+
+		
+<span class="fc" id="L73">		  LocalDate startDate = request.getStartDate();</span>
+		  
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">		  if (startDate != null) { queryBuilder.setStartDate(startDate); }</span>
+		  
+<span class="fc" id="L77">		  LocalDate endDate = request.getEndDate();</span>
+		  
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">		  if (endDate != null) { queryBuilder.setEndDate(endDate); }</span>
+		 
+
+<span class="fc" id="L82">		Example&lt;ReportEntity&gt; example = Example.of(queryBuilder);</span>
+
+<span class="fc" id="L84">		ArrayList&lt;SearchResponse&gt; response = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L86">		List&lt;ReportEntity&gt; findAll = repository.findAll(example);</span>
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">		for (ReportEntity entity : findAll) {</span>
+
+<span class="fc" id="L90">			SearchResponse searchResponse = new SearchResponse();</span>
+<span class="fc" id="L91">			BeanUtils.copyProperties(entity, searchResponse);</span>
+<span class="fc" id="L92">			response.add(searchResponse);</span>
+<span class="fc" id="L93">		}</span>
+<span class="fc" id="L94">		return response;</span>
+	}
+
+	@Override
+	public void generateExcel(HttpServletResponse response) throws Exception {
+
+<span class="fc" id="L100">		List&lt;ReportEntity&gt; findAll = repository.findAll();</span>
+
+<span class="fc" id="L102">		HSSFWorkbook hssfWorkbook = new HSSFWorkbook();</span>
+<span class="fc" id="L103">		HSSFSheet createSheet = hssfWorkbook.createSheet();</span>
+<span class="fc" id="L104">		HSSFRow headerRow = createSheet.createRow(0);</span>
+<span class="fc" id="L105">		headerRow.createCell(0).setCellValue(&quot;S.NO&quot;);</span>
+<span class="fc" id="L106">		headerRow.createCell(1).setCellValue(&quot;NAME&quot;);</span>
+<span class="fc" id="L107">		headerRow.createCell(2).setCellValue(&quot;EMAIL&quot;);</span>
+<span class="fc" id="L108">		headerRow.createCell(3).setCellValue(&quot;MOBILE NUMBER&quot;);</span>
+<span class="fc" id="L109">		headerRow.createCell(4).setCellValue(&quot;GENDER&quot;);</span>
+<span class="fc" id="L110">		headerRow.createCell(5).setCellValue(&quot;SSN&quot;);</span>
+<span class="fc" id="L111">		headerRow.createCell(6).setCellValue(&quot;PLAN NAME&quot;);</span>
+
+<span class="fc" id="L113">		int i = 1;</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">		for (ReportEntity entity : findAll) {</span>
+
+<span class="nc" id="L116">			HSSFRow dataRow = createSheet.createRow(i);</span>
+<span class="nc" id="L117">			dataRow.createCell(0).setCellValue(entity.getSno());</span>
+<span class="nc" id="L118">			dataRow.createCell(1).setCellValue(entity.getName());</span>
+<span class="nc" id="L119">			dataRow.createCell(2).setCellValue(entity.getEmail());</span>
+<span class="nc" id="L120">			dataRow.createCell(3).setCellValue(entity.getMobileNumber());</span>
+<span class="nc" id="L121">			dataRow.createCell(4).setCellValue(entity.getGender());</span>
+<span class="nc" id="L122">			dataRow.createCell(5).setCellValue(entity.getSsn());</span>
+<span class="nc" id="L123">			dataRow.createCell(6).setCellValue(entity.getPlanName());</span>
+
+<span class="nc" id="L125">			i++;</span>
+<span class="nc" id="L126">		}</span>
+<span class="fc" id="L127">		ServletOutputStream outputStream = response.getOutputStream();</span>
+<span class="fc" id="L128">		hssfWorkbook.write(outputStream);</span>
+<span class="fc" id="L129">		outputStream.close();</span>
+<span class="fc" id="L130">	}</span>
+
+	@Override
+	public void generatePdf(HttpServletResponse response) throws Exception {
+
+<span class="fc" id="L135">		List&lt;ReportEntity&gt; findAll = repository.findAll();</span>
+
+<span class="fc" id="L137">		Document document = new Document(PageSize.A4);</span>
+<span class="fc" id="L138">		PdfWriter.getInstance(document, response.getOutputStream());</span>
+<span class="fc" id="L139">		document.open();</span>
+<span class="fc" id="L140">		Font fontTiltle = FontFactory.getFont(FontFactory.TIMES_ROMAN);</span>
+<span class="fc" id="L141">		fontTiltle.setSize(20);</span>
+<span class="fc" id="L142">		fontTiltle.setColor(Color.BLUE);</span>
+
+<span class="fc" id="L144">		Paragraph paragraph = new Paragraph(&quot;Search Report&quot;, fontTiltle);</span>
+<span class="fc" id="L145">		paragraph.setAlignment(Paragraph.ALIGN_CENTER);</span>
+<span class="fc" id="L146">		document.add(paragraph);</span>
+
+<span class="fc" id="L148">		PdfPTable table = new PdfPTable(8);</span>
+<span class="fc" id="L149">		table.setWidthPercentage(100f);</span>
+<span class="fc" id="L150">		table.setWidths(new int[] { 3, 3, 3, 3, 3, 3, 3, 3 });</span>
+<span class="fc" id="L151">		table.setSpacingBefore(5);</span>
+
+<span class="fc" id="L153">		PdfPCell cell = new PdfPCell();</span>
+
+<span class="fc" id="L155">		cell.setBackgroundColor(CMYKColor.MAGENTA);</span>
+<span class="fc" id="L156">		cell.setPadding(5);</span>
+
+<span class="fc" id="L158">		Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN);</span>
+<span class="fc" id="L159">		font.setColor(CMYKColor.BLACK);</span>
+
+<span class="fc" id="L161">		cell.setPhrase(new Phrase(&quot;S.NO&quot;, font));</span>
+<span class="fc" id="L162">		table.addCell(cell);</span>
+<span class="fc" id="L163">		cell.setPhrase(new Phrase(&quot;NAME&quot;, font));</span>
+<span class="fc" id="L164">		table.addCell(cell);</span>
+<span class="fc" id="L165">		cell.setPhrase(new Phrase(&quot;EMAIL&quot;, font));</span>
+<span class="fc" id="L166">		table.addCell(cell);</span>
+<span class="fc" id="L167">		cell.setPhrase(new Phrase(&quot;MOBILE NUMBER&quot;, font));</span>
+<span class="fc" id="L168">		table.addCell(cell);</span>
+<span class="fc" id="L169">		cell.setPhrase(new Phrase(&quot;GENDER&quot;, font));</span>
+<span class="fc" id="L170">		table.addCell(cell);</span>
+<span class="fc" id="L171">		cell.setPhrase(new Phrase(&quot;SSN&quot;, font));</span>
+<span class="fc" id="L172">		table.addCell(cell);</span>
+<span class="fc" id="L173">		cell.setPhrase(new Phrase(&quot;PLAN NAME&quot;, font));</span>
+<span class="fc" id="L174">		table.addCell(cell);</span>
+<span class="fc" id="L175">		cell.setPhrase(new Phrase(&quot;PLAN STATUS&quot;, font));</span>
+<span class="fc" id="L176">		table.addCell(cell);</span>
+
+<span class="fc bfc" id="L178" title="All 2 branches covered.">		for (ReportEntity entity : findAll) {</span>
+<span class="fc" id="L179">			table.addCell(String.valueOf(entity.getSno()));</span>
+<span class="fc" id="L180">			table.addCell(entity.getName());</span>
+<span class="fc" id="L181">			table.addCell(entity.getEmail());</span>
+<span class="fc" id="L182">			table.addCell(String.valueOf(entity.getMobileNumber()));</span>
+<span class="fc" id="L183">			table.addCell(entity.getGender());</span>
+<span class="fc" id="L184">			table.addCell(String.valueOf(entity.getSsn()));</span>
+<span class="fc" id="L185">			table.addCell(entity.getPlanName());</span>
+<span class="fc" id="L186">			table.addCell(entity.getPlanStatus());</span>
+<span class="fc" id="L187">		}</span>
+
+<span class="fc" id="L189">		document.add(table);</span>
+<span class="fc" id="L190">		document.close();</span>
+
+<span class="fc" id="L192">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

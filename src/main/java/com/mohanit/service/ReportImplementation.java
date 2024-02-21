@@ -69,17 +69,15 @@ public class ReportImplementation implements ReportService {
 			queryBuilder.setPlanStatus(planStatus);
 		}
 
-		LocalDate startDate = request.getStartDate();
-
-		if (startDate != null) {
-			queryBuilder.setStartDate(startDate);
-		}
-
-		LocalDate endDate = request.getEndDate();
-
-		if (endDate != null) {
-			queryBuilder.setEndDate(endDate);
-		}
+		
+		  LocalDate startDate = request.getStartDate();
+		  
+		  if (startDate != null) { queryBuilder.setStartDate(startDate); }
+		  
+		  LocalDate endDate = request.getEndDate();
+		  
+		  if (endDate != null) { queryBuilder.setEndDate(endDate); }
+		 
 
 		Example<ReportEntity> example = Example.of(queryBuilder);
 
